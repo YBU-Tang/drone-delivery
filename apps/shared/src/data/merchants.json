@@ -1,0 +1,117 @@
+{
+  "merchants": [
+    {
+      "id": "MCH-001",
+      "name": "星巴克-浦东店",
+      "category": "咖啡茶饮",
+      "position": {
+        "latitude": 31.2350,
+        "longitude": 121.4800
+      },
+      "address": "上海市浦东新区世纪大道100号",
+      "phone": "021-58880001",
+      "status": "active",
+      "rating": 4.8,
+      "createdAt": "2026-01-10T09:00:00Z"
+    },
+    {
+      "id": "MCH-002",
+      "name": "麦当劳-陆家嘴店",
+      "category": "快餐",
+      "position": {
+        "latitude": 31.2400,
+        "longitude": 121.4900
+      },
+      "address": "上海市浦东新区陆家嘴环路88号",
+      "phone": "021-58880002",
+      "status": "active",
+      "rating": 4.5,
+      "createdAt": "2026-01-12T10:30:00Z"
+    },
+    {
+      "id": "MCH-003",
+      "name": "盒马鲜生-浦东店",
+      "category": "生鲜",
+      "position": {
+        "latitude": 31.2250,
+        "longitude": 121.4650
+      },
+      "address": "上海市浦东新区张江高科技园区",
+      "phone": "021-58880003",
+      "status": "active",
+      "rating": 4.6,
+      "createdAt": "2026-01-15T08:00:00Z"
+    },
+    {
+      "id": "MCH-004",
+      "name": "叮当快药-浦东店",
+      "category": "药品",
+      "position": {
+        "latitude": 31.2320,
+        "longitude": 121.4780
+      },
+      "address": "上海市浦东新区世纪公园附近",
+      "phone": "021-58880004",
+      "status": "active",
+      "rating": 4.9,
+      "createdAt": "2026-02-01T14:00:00Z"
+    },
+    {
+      "id": "MCH-005",
+      "name": "顺丰速运-浦东站",
+      "category": "文件",
+      "position": {
+        "latitude": 31.2280,
+        "longitude": 121.4700
+      },
+      "address": "上海市浦东新区丁香路500号",
+      "phone": "021-58880005",
+      "status": "active",
+      "rating": 4.7,
+      "createdAt": "2026-02-10T09:00:00Z"
+    },
+    {
+      "id": "MCH-006",
+      "name": "肯德基-张江店",
+      "category": "快餐",
+      "position": {
+        "latitude": 31.2200,
+        "longitude": 121.4850
+      },
+      "address": "上海市浦东新区张江镇科苑路88号",
+      "phone": "021-58880006",
+      "status": "active",
+      "rating": 4.4,
+      "createdAt": "2026-02-15T11:00:00Z"
+    },
+    {
+      "id": "MCH-007",
+      "name": "瑞幸咖啡-张江店",
+      "category": "咖啡茶饮",
+      "position": {
+        "latitude": 31.2180,
+        "longitude": 121.4820
+      },
+      "address": "上海市浦东新区张江高科技园区碧波路",
+      "phone": "021-58880007",
+      "status": "active",
+      "rating": 4.6,
+      "createdAt": "2026-03-01T10:00:00Z"
+    },
+    {
+      "id": "MCH-008",
+      "name": "7-Eleven-世纪大道店",
+      "category": "其他",
+      "position": {
+        "latitude": 31.2380,
+        "longitude": 121.4680
+      },
+      "address": "上海市浦东新区世纪大道2000号",
+      "phone": "021-58880008",
+      "status": "active",
+      "rating": 4.3,
+      "createdAt": "2026-03-10T08:00:00Z"
+    }
+  ],
+  "categories": ["快餐", "咖啡茶饮", "生鲜", "药品", "文件", "其他"]
+}

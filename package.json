@@ -1,0 +1,14 @@
+{
+  "name": "drone-delivery-platform",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces --if-present",
+    "dev:admin": "npm run dev -w apps/admin",
+    "dev:merchant": "npm run dev -w apps/merchant",
+    "build": "npm run build --workspaces --if-present"
+  }
+}
