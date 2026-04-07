@@ -1,0 +1,139 @@
+{
+  "drones": [
+    {
+      "id": "DRONE-001",
+      "name": "无人机-001",
+      "model": "DJI-M300",
+      "status": "idle",
+      "position": {
+        "latitude": 31.2304,
+        "longitude": 121.4737
+      },
+      "battery": 95,
+      "maxSpeed": 15,
+      "currentSpeed": 0,
+      "currentTask": null,
+      "baseStation": "BS-001",
+      "createdAt": "2026-01-15T08:00:00Z"
+    },
+    {
+      "id": "DRONE-002",
+      "name": "无人机-002",
+      "model": "DJI-M300",
+      "status": "dispatching",
+      "position": {
+        "latitude": 31.2350,
+        "longitude": 121.4800
+      },
+      "battery": 78,
+      "maxSpeed": 15,
+      "currentSpeed": 10,
+      "currentTask": "ORD-202603310001",
+      "baseStation": "BS-001",
+      "createdAt": "2026-01-16T10:00:00Z"
+    },
+    {
+      "id": "DRONE-003",
+      "name": "无人机-003",
+      "model": "DJI-Mavic3",
+      "status": "idle",
+      "position": {
+        "latitude": 31.2250,
+        "longitude": 121.4650
+      },
+      "battery": 100,
+      "maxSpeed": 20,
+      "currentSpeed": 0,
+      "currentTask": null,
+      "baseStation": "BS-002",
+      "createdAt": "2026-01-20T14:00:00Z"
+    },
+    {
+      "id": "DRONE-004",
+      "name": "无人机-004",
+      "model": "DJI-Mavic3",
+      "status": "charging",
+      "position": {
+        "latitude": 31.2280,
+        "longitude": 121.4700
+      },
+      "battery": 25,
+      "maxSpeed": 20,
+      "currentSpeed": 0,
+      "currentTask": null,
+      "baseStation": "BS-001",
+      "createdAt": "2026-02-01T09:00:00Z"
+    },
+    {
+      "id": "DRONE-005",
+      "name": "无人机-005",
+      "model": "DJI-FPV",
+      "status": "returning",
+      "position": {
+        "latitude": 31.2400,
+        "longitude": 121.4750
+      },
+      "battery": 45,
+      "maxSpeed": 18,
+      "currentSpeed": 8,
+      "currentTask": null,
+      "baseStation": "BS-001",
+      "createdAt": "2026-02-10T11:00:00Z"
+    },
+    {
+      "id": "DRONE-006",
+      "name": "无人机-006",
+      "model": "DJI-M300",
+      "status": "idle",
+      "position": {
+        "latitude": 31.2200,
+        "longitude": 121.4850
+      },
+      "battery": 88,
+      "maxSpeed": 15,
+      "currentSpeed": 0,
+      "currentTask": null,
+      "baseStation": "BS-003",
+      "createdAt": "2026-02-15T08:30:00Z"
+    },
+    {
+      "id": "DRONE-007",
+      "name": "无人机-007",
+      "model": "DJI-Mavic3",
+      "status": "dispatching",
+      "position": {
+        "latitude": 31.2380,
+        "longitude": 121.4680
+      },
+      "battery": 65,
+      "maxSpeed": 20,
+      "currentSpeed": 12,
+      "currentTask": "ORD-202603310002",
+      "baseStation": "BS-002",
+      "createdAt": "2026-03-01T10:00:00Z"
+    },
+    {
+      "id": "DRONE-008",
+      "name": "无人机-008",
+      "model": "DJI-FPV",
+      "status": "maintenance",
+      "position": {
+        "latitude": 31.2280,
+        "longitude": 121.4700
+      },
+      "battery": 0,
+      "maxSpeed": 18,
+      "currentSpeed": 0,
+      "currentTask": null,
+      "baseStation": "BS-001",
+      "createdAt": "2026-03-05T15:00:00Z"
+    }
+  ],
+  "droneStatuses": {
+    "idle": "空闲",
+    "dispatching": "配送中",
+    "returning": "返航中",
+    "charging": "充电中",
+    "maintenance": "维护中"
+  }
+}

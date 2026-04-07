@@ -3,7 +3,7 @@ import { Plane, Package, Store, TrendingUp } from 'lucide-react';
 import MapContainer from '../components/Map/MapContainer';
 import useStore from '../hooks/useDrones';
 
-export default function Dashboard() {
+export default function Dashboard() {//订阅状态和计算属性
   const {
     drones,
     merchants,

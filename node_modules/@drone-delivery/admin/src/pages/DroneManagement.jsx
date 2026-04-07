@@ -10,7 +10,7 @@ export default function DroneManagement() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [filter, setFilter] = useState('all');
 
-  const filteredDrones = filter === 'all'
+  const filteredDrones = filter === 'all'//基于状态筛选无人机
     ? drones
     : drones.filter((d) => d.status === filter);
 
