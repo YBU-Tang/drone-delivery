@@ -9,6 +9,7 @@
     "dev": "npm run dev --workspaces --if-present",
     "dev:admin": "npm run dev -w apps/admin",
     "dev:merchant": "npm run dev -w apps/merchant",
+    "dev:server": "npm run dev -w apps/server",
     "build": "npm run build --workspaces --if-present"
   }
 }

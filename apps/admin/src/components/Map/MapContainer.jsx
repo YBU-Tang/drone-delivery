@@ -1,180 +1,184 @@
-/** 
- * ============================================
- * MapContainer.jsx - 地图容器组件
- * ============================================
- * 
- * 【Leaflet 是什么？】
- * Leaflet 是一个开源的 JavaScript 地图库
- * - 轻量级，容易使用
- * - 支持多种地图瓦片源（OpenStreetMap, Google Maps 等）
- * - 支持标记、折线、多边形等地图元素
- * 
- * 【React-Leaflet 是什么？】
- * React-Leaflet 是 Leaflet 的 React 封装
- * - 把 Leaflet 的 JS API 转成 React 组件
- * - 更符合 React 的开发习惯
- * 
- * 【核心组件】
- * 
- * 1. MapContainer - 地图容器
- *    所有地图组件必须包在它里面
- *    属性：
- *    - center: 地图中心点 [纬度, 经度]
- *    - zoom: 缩放级别 (1-18)
- * 
- * 2. TileLayer - 地图瓦片层
- *    就是我们看到的地图图片
- *    url 格式：{z}/{x}/{y}
- *    - z: 缩放级别
- *    - x: 瓦片列号
- *    - y: 瓦片行号
- * 
- * 3. Marker - 标记点
- *    在地图上显示一个位置
- *    - position: 位置 [纬度, 经度]
- *    - icon: 自定义图标
- * 
- * 4. Popup - 弹出信息框
- *    点击 Marker 后显示的信息
- * 
- * 【useMap 是什么？】
- * useMap 是一个 Hook，用于获取地图实例
- * 可以调用地图的方法，如 setView(), panTo() 等
+/**
+ * ============================================================
+ * 地图容器组件（Map Container）
+ * ============================================================
+ *
+ * 【功能】
+ * 使用 Leaflet（通过 react-leaflet）渲染交互式地图，
+ * 显示无人机和商家的实时位置。
+ *
+ * 【使用的地图技术】
+ * - Leaflet：开源的移动端友好交互式地图库
+ * - OpenStreetMap：免费的地图瓦片数据源
+ * - react-leaflet：Leaflet 的 React 封装
+ *
+ * 【Leaflet 核心概念】
+ * - MapContainer：地图容器，类似于 <div> 包裹地图
+ * - TileLayer：地图瓦片图层（显示街道、地形等背景图）
+ * - Marker：在地图上标注点位
+ * - Popup：点击标注后弹出的信息框
+ * - useMap：子组件访问地图实例的 Hook
+ *
+ * 【地图坐标系】
+ * Leaflet 使用 EPSG:3857（Web Mercator）投影坐标系，
+ * 但在 React-Leaflet 中，位置用 [纬度, 经度] 数组表示。
  */
 
 import { MapContainer as LeafletMap, TileLayer, useMap } from 'react-leaflet';
+import { useEffect, useRef } from 'react';
 import { DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM } from '@shared/constants.js';
 import DroneMarker from './DroneMarker';
 import MerchantMarker from './MerchantMarker';
 
 /**
- * MapController 组件
- * 用于程序化控制地图
- * 
- * 为什么需要这个组件？
- * Leaflet 的 MapContainer 的 center 属性只在初始化时生效
- * 如果需要动态更新地图中心，就需要用 useMap 来设置
- * 
- * @param {Array} center - 地图中心点 [纬度, 经度]
- * @param {number} zoom - 缩放级别
+ * 地图视图更新器组件
+ *
+ * 【功能】
+ * 当 props.center 变化时，自动将地图视图平移到指定位置。
+ *
+ * 【为什么需要这个组件？】
+ * Leaflet 的 MapContainer 本身不响应外部的位置变化。
+ * 我们需要使用 useMap hook 获取地图实例，然后手动调用 setView()。
+ *
+ * 【useRef 的使用】
+ * useRef 用于存储"不需要触发重新渲染"的值。
+ * prevCenter 用于比较新旧位置，避免重复设置（性能优化）。
  */
-function MapController({ center, zoom }) {
-  // useMap() - 获取地图实例
-  // 这是 react-leaflet 提供的 Hook
+function MapUpdater({ center, zoom }) {
+  // 获取 Leaflet 地图实例
   const map = useMap();
-  
-  // 如果传入了 center，就更新地图视图
-  if (center) {
-    // setView(center, zoom) - 设置地图中心和缩放级别
-    map.setView(center, zoom || map.getZoom());
-  }
-  
-  // MapController 不渲染任何 DOM 元素
-  // 它只是通过 Hook 控制地图
+
+  // 记录上一次的位置，避免重复更新
+  const prevCenter = useRef(null);
+
+  /**
+   * 当 center 或 zoom 变化时，更新地图视图
+   *
+   * 【为什么要比较新旧值？】
+   * React 的 useEffect 在 props 变化时会执行。
+   * 如果新旧值相同，重复调用 setView 会导致不必要的地图动画。
+   * 使用 useRef 记录旧值，可以避免这种开销。
+   */
+  useEffect(() => {
+    const lat = center?.[0];
+    const lng = center?.[1];
+
+    // 只有提供了有效坐标时才更新
+    if (lat != null && lng != null) {
+      const same =
+        prevCenter.current?.[0] === lat && prevCenter.current?.[1] === lng;
+
+      // 如果位置变化了，才更新视图
+      if (!same) {
+        prevCenter.current = [lat, lng];
+        // map.setView(center, zoom, options)
+        // center: [lat, lng] 新中心点
+        // zoom: 缩放级别
+        // { animate: true }: 是否使用平滑动画
+        map.setView([lat, lng], zoom ?? DEFAULT_MAP_ZOOM, { animate: true });
+      }
+    }
+  }, [center, zoom, map]);
+
+  // MapUpdater 不渲染任何 DOM，只负责逻辑控制
   return null;
 }
 
 /**
- * MapContainer 主组件
- * 封装了整个地图功能
- * 
- * @param {Array} center - 地图中心点，默认上海市浦东新区
- * @param {number} zoom - 缩放级别，默认 13
- * @param {Array} drones - 无人机列表
- * @param {Array} merchants - 商家列表
- * @param {Function} onDroneClick - 点击无人机回调
- * @param {Function} onMerchantClick - 点击商家回调
+ * 地图容器组件
+ *
+ * @param {Object} props
+ * @param {Array} props.center - 地图中心点 [纬度, 经度]
+ * @param {number} props.zoom - 缩放级别（1-18）
+ * @param {Array} props.drones - 无人机数据列表
+ * @param {Array} props.merchants - 商家数据列表
+ * @param {Function} props.onDroneClick - 无人机点击回调
+ * @param {Function} props.onMerchantClick - 商家点击回调
  */
-export default function MapContainer({ 
-  center = DEFAULT_MAP_CENTER,    // 默认中心：[31.2304, 121.4737] 上海市浦东新区
-  zoom = DEFAULT_MAP_ZOOM,        // 默认缩放级别：13
-  drones = [],                     // 无人机列表
-  merchants = [],                  // 商家列表
-  onDroneClick,                   // 点击无人机回调
-  onMerchantClick,                // 点击商家回调
+export default function MapContainer({
+  center,
+  zoom = DEFAULT_MAP_ZOOM,
+  drones = [],
+  merchants = [],
+  onDroneClick,
+  onMerchantClick,
 }) {
   return (
-    /**
-     * LeafletMap - Leaflet 的 MapContainer 封装
-     * 
-     * className="h-full w-full" - 让地图占满父容器
-     * scrollWheelZoom={true} - 允许鼠标滚轮缩放
-     */
-    <LeafletMap
-      center={center}
-      zoom={zoom}
-      className="h-full w-full"
-      scrollWheelZoom={true}  // 滚轮缩放
-    >
+    <div style={{ height: '100%', width: '100%' }}>
       {/**
-       * TileLayer - 地图瓦片层
-       * 
-       * OpenStreetMap 瓦片源：
-       * https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png
-       * 
-       * {s} 会被替换成 a, b, c 等，用于负载均衡
-       * 
-       * attribution - 地图右下角的版权信息
+       * LeafletMap：地图容器
+       *
+       * 【必须设置的属性】
+       * - center：初始中心点坐标 [纬度, 经度]
+       * - zoom：初始缩放级别
+       * - style：地图的宽高（必须设置，否则不显示）
+       *
+       * 【可选属性】
+       * - scrollWheelZoom：是否允许滚轮缩放
+       * - zoomControl：是否显示缩放控制按钮
        */}
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      
-      {/**
-       * MapController - 地图控制器
-       * 用于响应式更新地图中心点
-       */}
-      <MapController center={center} zoom={zoom} />
-      
-      {/**
-       * 遍历商家列表，渲染每个商家的标记点
-       * 
-       * key={merchant.id} - React 的列表渲染要求每个元素有唯一 key
-       * 这有助于 React 高效地更新列表
-       */}
-      {merchants.map((merchant) => (
-        <MerchantMarker
-          key={merchant.id}
-          merchant={merchant}
-          onClick={() => onMerchantClick?.(merchant)}
+      <LeafletMap
+        center={DEFAULT_MAP_CENTER}
+        zoom={zoom}
+        style={{ height: '100%', width: '100%' }}
+        scrollWheelZoom={true}
+        zoomControl={true}
+      >
+        {/**
+         * TileLayer：地图瓦片图层
+         *
+         * 【什么是瓦片？】
+         * 地图被切成无数小图片（256×256 像素），按层级和坐标加载。
+         * 这就是为什么缩放地图时会看到图片"闪烁"加载。
+         *
+         * 【OpenStreetMap 瓦片服务器】
+         * url 模板：https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png
+         *   - {s}：子域名（a, b, c），用于绕过浏览器并发限制
+         *   - {z}：缩放级别
+         *   - {x}, {y}：瓦片坐标
+         *
+         * 【attribution】
+         * 必须添加地图数据来源的版权信息，遵守 OpenStreetMap 许可。
+         */}
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-      ))}
-      
-      {/**
-       * 遍历无人机列表，渲染每个无人机的标记点
-       */}
-      {drones.map((drone) => (
-        <DroneMarker
-          key={drone.id}
-          drone={drone}
-          onClick={() => onDroneClick?.(drone)}
-        />
-      ))}
-      
-    </LeafletMap>
+
+        {/**
+         * MapUpdater：地图视图控制器
+         * 响应 center prop 的变化，自动平移地图。
+         */}
+        <MapUpdater center={center} zoom={zoom} />
+
+        {/**
+         * MerchantMarker：商家标记
+         * 遍历所有商家，渲染对应的地图标记。
+         *
+         * 【React 列表渲染的 key】
+         * key 必须唯一，用于 React 识别每个元素。
+         * 这里用 `merchant-${merchant.id}` 确保唯一性。
+         */}
+        {merchants.map((merchant) => (
+          <MerchantMarker
+            key={`merchant-${merchant.id}`}
+            merchant={merchant}
+            onClick={() => onMerchantClick?.(merchant)}
+          />
+        ))}
+
+        {/**
+         * DroneMarker：无人机标记
+         * 遍历所有无人机，渲染对应的地图标记。
+         */}
+        {drones.map((drone) => (
+          <DroneMarker
+            key={`drone-${drone.id}`}
+            drone={drone}
+            onClick={() => onDroneClick?.(drone)}
+          />
+        ))}
+      </LeafletMap>
+    </div>
   );
 }
-
-/**
- * 【地图缩放级别参考】
- * 
- * zoom: 1  - 世界地图
- * zoom: 5  - 大洲
- * zoom: 10 - 城市
- * zoom: 13 - 城区（我们默认使用的级别）
- * zoom: 15 - 街道
- * zoom: 18 - 具体建筑
- */
-
-/**
- * 【组件层级结构】
- * 
- * <MapContainer>
- *   ├── <TileLayer />              地图底图
- *   ├── <MapController />          地图控制器
- *   ├── <MerchantMarker /> × N     商家标记（多个）
- *   │     └── <Popup>             点击弹出的信息
- *   └── <DroneMarker /> × N       无人机标记（多个）
- *         └── <Popup>             点击弹出的信息
- */

@@ -1,60 +1,117 @@
 /**
- * ============================================
- * 入口文件 - 整个应用的启动点
- * ============================================
- * 
- * 这个文件是 React 应用加载的第一个 JavaScript 文件
- * 
- * 执行流程：
- * 1. ReactDOM.createRoot() - 创建一个 React 根容器，绑定到 HTML 中的 #root 元素
- * 2. render() - 渲染整个应用到根容器中
- * 
- * 组件层级：
- * StrictMode (开发环境检查工具)
- *   └── BrowserRouter (路由管理器)
- *         └── App (应用主组件)
- *               └── AdminLayout (后台布局)
- *                     └── 各页面组件 (Dashboard, DroneManagement, etc.)
+ * ============================================================
+ * React 入口文件（Entry Point）
+ * ============================================================
+ *
+ * 【功能】
+ * 启动 React 应用，将组件挂载到 DOM 中。
+ *
+ * 【文件职责】
+ * 这是一切的起点 —— 浏览器加载 HTML 后，
+ * 这段代码负责启动 React，渲染 App 组件。
+ *
+ * 【React 18 的变化】
+ * React 18 引入了新的创建根节点方式：
+ *   旧版：ReactDOM.render(<App />, document.getElementById('root'))
+ *   新版：ReactDOM.createRoot(root).render(<App />)
+ *
+ * 新 API 支持 Concurrent Mode（并发模式），带来更好的性能。
  */
 
+/**
+ * React 入口
+ *
+ * 【createRoot】
+ * 创建 React 根节点。React 18 开始使用双 API：
+ *   1. createRoot() 创建根节点
+ *   2. root.render() 渲染内容
+ *
+ * 这样做的原因：
+ *   - 支持 concurrent rendering（并发渲染）
+ *   - 支持 automatic batching（自动批处理）
+ *   - 更清晰的 API 边界
+ */
 import React from 'react';
-// ReactDOM 是 React 的 DOM 操作库，createRoot 是创建渲染根节点的方法
 import ReactDOM from 'react-dom/client';
 
-// BrowserRouter: React Router 的路由容器组件
-// 作用：管理 URL 和组件的对应关系，实现单页应用(SPA)的路由切换
-// 当 URL 变化时，不会刷新页面，只会更新对应的组件
+/**
+ * 路由管理
+ * react-router-dom 提供客户端路由功能：
+ *   - BrowserRouter：基于 HTML5 History API 的路由
+ *   - 允许单页面应用（SPA）实现无刷新跳转
+ */
 import { BrowserRouter } from 'react-router-dom';
 
-// 导入主应用组件
+/**
+ * 应用根组件
+ */
 import App from './App';
 
-// 导入全局样式（Tailwind CSS 的基础样式在这里）
+/**
+ * 上下文提供者
+ * AuthProvider：管理用户登录状态
+ * NotificationProvider：管理全局通知
+ */
+import { AuthProvider } from './context/AuthContext';
+import { NotificationProvider } from './context/NotificationContext';
+
+/**
+ * 全局样式
+ * 引入 Tailwind CSS 的入口文件
+ */
 import './index.css';
 
 /**
- * createRoot() - 创建一个 React 根实例
- * 参数：DOM 中的一个元素（通常 id="root"）
- * 这个元素在 index.html 中定义
+ * 获取 DOM 根节点
+ *
+ * 【为什么是 'root'？】
+ * 在 public/index.html 中有一个 <div id="root"></div>。
+ * React 会把整个应用挂载到这个 div 中。
+ *
+ * 【注意】
+ * 这个文件路径相对于 public/ 文件夹，而不是 src/。
  */
-const root = ReactDOM.createRoot(
-  document.getElementById('root')
-);
+const root = ReactDOM.createRoot(document.getElementById('root'));
 
 /**
- * render() - 将 React 组件渲染到 DOM 中
- * 
- * StrictMode 是一个开发工具组件，会帮助检测：
- * - 过时的 API 使用
- * - 不安全的生命周期方法
- * - 副作用的问题
- * 
- * BrowserRouter 包裹整个应用，使其支持路由功能
+ * 渲染应用
+ *
+ * <React.StrictMode>
+ * React 严格模式是一个开发工具，帮助发现潜在问题：
+ *   - 检测不推荐的 API 使用
+ *   - 双重调用某些函数以发现副作用问题
+ *   - 只在开发模式下生效，生产环境自动禁用
+ *
+ * 包裹顺序很重要：
+ *   <BrowserRouter>         ← 最外层，提供路由功能
+ *     <AuthProvider>         ← 提供认证状态
+ *       <NotificationProvider> ← 提供通知功能
+ *         <App />            ← 应用根组件
+ *       </NotificationProvider>
+ *     </AuthProvider>
+ *   </BrowserRouter>
  */
 root.render(
   <React.StrictMode>
     <BrowserRouter>
-      <App />
+      <AuthProvider>
+        <NotificationProvider>
+          <App />
+        </NotificationProvider>
+      </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>
 );
+
+/**
+ * 【应用启动流程】
+ *
+ * 1. 浏览器加载 index.html
+ * 2. 执行 main.jsx
+ * 3. ReactDOM.createRoot() 创建 React 根节点
+ * 4. root.render() 开始渲染
+ * 5. React 创建虚拟 DOM
+ * 6. AuthProvider 检查 localStorage 中的 Token
+ * 7. 如果有 Token，调用 /api/auth/me 验证
+ * 8. App 根据用户状态决定显示登录页还是管理后台
+ */

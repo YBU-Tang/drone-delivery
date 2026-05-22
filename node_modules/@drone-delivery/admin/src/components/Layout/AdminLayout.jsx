@@ -1,176 +1,211 @@
 /**
- * ============================================
- * AdminLayout.jsx - 后台管理系统布局组件
- * ============================================
- * 
- * 【什么是布局组件？】
- * 布局组件是用来包裹页面的"外壳"
- * 
- * 典型结构：
- * ┌─────────────────────────────────┐
- * │          Header (头部)           │
- * ├───────────┬─────────────────────┤
- * │  Sidebar  │                     │
- * │  (侧边栏) │   Main Content      │
- * │           │   (主内容区)         │
- * │  - 导航1  │                     │
- * │  - 导航2  │   <Outlet />        │
- * │  - 导航3  │   路由页面在这里      │
- * │           │                     │
- * ├───────────┴─────────────────────┤
- * │          Footer (底部)           │
- * └─────────────────────────────────┘
- * 
- * 【Outlet 是什么？】
- * Outlet 是 React Router 提供的组件
- * 它是一个"插槽"，用于渲染子路由的内容
- * 
- * 就像 PowerPoint 的占位符：
- * - 幻灯片模板（Layout）定义好整体布局
- * - 具体内容（子路由页面）放到预留的位置（Outlet）
- * 
- * 【NavLink 是什么？】
- * NavLink 是 Link 的升级版
- * - Link: 点击跳转到指定路径
- * - NavLink: 点击跳转 + 自动添加"选中"样式（isActive）
+ * ============================================================
+ * 管理后台布局组件（Admin Layout）
+ * ============================================================
+ *
+ * 【功能】
+ * 提供整个后台管理系统的页面框架：
+ *   - 左侧固定导航栏
+ *   - 右侧内容区域（通过 Outlet 渲染子路由）
+ *
+ * 【React Router 的嵌套路由】
+ * 布局组件（Layout）配合 <Outlet /> 实现嵌套路由：
+ *
+ *   <Route path="/" element={<AdminLayout />}>
+ *     <Route path="dashboard" element={<Dashboard />} />
+ *     <Route path="drones" element={<DroneManagement />} />
+ *   </Route>
+ *
+ *   渲染结果：
+ *   <AdminLayout>
+ *     <Outlet /> ← 这里渲染 Dashboard 或 DroneManagement
+ *   </AdminLayout>
+ *
+ * 【设计考量】
+ * - 左侧导航固定，不随内容滚动
+ * - 内容区域填满剩余空间，支持内部滚动
+ * - 深色侧边栏提供视觉分隔，突出内容区域
  */
 
-// 从 react-router-dom 导入路由相关组件
-import { NavLink, Outlet } from 'react-router-dom';
-
-// 导入 Lucide 图标库
-import { Map, Plane, Store } from 'lucide-react';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { Map, Plane, Store, Package, BarChart3, Settings, LogOut, ChevronRight } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 /**
- * 导航配置数组
- * 定义了后台系统的三个导航项
- * 
- * 结构说明：
- * - to: 点击后跳转的路径
- * - icon: 显示的图标组件
- * - label: 显示的文字
+ * 导航菜单配置
+ *
+ * 【为什么用配置数组而不是硬编码？】
+ * 1. 便于维护，新增/删除页面只需修改配置
+ * 2. 减少重复代码，每个菜单项的结构一致
+ * 3. 便于动态渲染（如根据权限显示不同菜单）
+ *
+ * 【to、icon、label 的分工】
+ * - to：路由路径（用于 NavLink）
+ * - icon：图标组件（React 组件，传入后渲染）
+ * - label：显示文字
  */
 const navItems = [
   { to: '/dashboard', icon: Map, label: '地图总览' },
   { to: '/drones', icon: Plane, label: '无人机管理' },
   { to: '/merchants', icon: Store, label: '商家管理' },
+  { to: '/orders', icon: Package, label: '订单管理' },
+  { to: '/analytics', icon: BarChart3, label: '数据分析' },
+  { to: '/settings', icon: Settings, label: '系统设置' },
 ];
 
 /**
- * AdminLayout 组件
- * 后台系统的整体布局
+ * 管理后台布局
+ *
+ * 【组件结构】
+ * <div>                  ← 外层容器，最小高度 100vh
+ *   <aside>              ← 左侧导航栏，固定宽度
+ *     <logo区域>
+ *     <nav>              ← 导航链接列表
+ *     <user区域>
+ *   <main>               ← 主内容区，撑满剩余空间
+ *     <Outlet />         ← 子路由渲染位置
  */
 export default function AdminLayout() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  /**
+   * 处理退出登录
+   *
+   * 【为什么要用 navigate？】
+   * logout() 清除用户状态后，需要导航回登录页。
+   * 使用 navigate 可以确保 URL 和页面状态同步。
+   */
+  const handleLogout = () => {
+    logout();    // 清除用户状态和 Token
+    navigate('/login'); // 跳转到登录页
+  };
+
   return (
     /**
-     * flex 布局
-     * - 外层 div: 使用 flexbox，左右布局
-     * - aside: 左侧导航栏，固定宽度 256px (w-64)
-     * - main: 右侧主内容区，flex-1 占满剩余空间
+     * 外层容器
+     *
+     * min-h-screen：最小高度为视口高度（100vh）
+     * flex：将容器设为弹性盒，子元素水平排列
+     * bg-gray-100：浅灰色背景，让内容区更突出
      */
-    <div className="min-h-screen flex">
-      
+    <div className="min-h-screen flex bg-gray-100">
+
       {/**
-       * <aside> - 侧边栏
-       * - 固定在左侧
-       * - 深色背景 (bg-gray-900)
-       * - 包含：
-       *   1. Logo 区域
-       *   2. 导航菜单
-       *   3. 底部信息
+       * 左侧导航栏
+       *
+       * w-64：固定宽度 256px（16rem）
+       * bg-gray-900：深灰色背景，与白色内容区形成对比
+       * text-white：白色文字
+       * flex flex-col：垂直排列子元素
+       * flex-shrink-0：不允许收缩，保持固定宽度
        */}
-      <aside className="w-64 bg-gray-900 text-white flex flex-col">
-        
+      <aside className="w-64 bg-gray-900 text-white flex flex-col flex-shrink-0">
+
         {/**
          * Logo 区域
-         * 包含系统名称和副标题
+         * 包含平台名称和副标题。
          */}
-        <div className="p-6 border-b border-gray-700">
-          <h1 className="text-xl font-bold flex items-center gap-2">
-            {/* Plane 图标 */}
-            <Plane className="w-6 h-6" />
+        <div className="p-5 border-b border-gray-700">
+          <h1 className="text-lg font-bold flex items-center gap-2.5">
+            {/**
+             * Logo 图标
+             * 深蓝色圆形背景 + 无人机图标。
+             */}
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <Plane className="w-4 h-4" />
+            </div>
             无人机配送平台
           </h1>
-          <p className="text-sm text-gray-400 mt-1">后台管理系统</p>
+          <p className="text-xs text-gray-400 mt-1.5 ml-10">后台管理系统</p>
         </div>
 
         {/**
          * 导航菜单
-         * 使用 map 遍历 navItems 数组生成导航链接
+         *
+         * flex-1：占据剩余所有空间
+         * p-3：内边距
+         * space-y-0.5：菜单项之间的间距
          */}
-        <nav className="flex-1 p-4">
+        <nav className="flex-1 p-3 space-y-0.5">
+          {/**
+           * 遍历 navItems，渲染每个导航链接
+           */}
           {navItems.map(({ to, icon: Icon, label }) => (
-            /**
-             * NavLink - 导航链接组件
-             * 
-             * isActive 参数：
-             * - 当当前 URL 匹配 to 属性时，isActive 为 true
-             * - 当 isActive 为 true 时，添加蓝色背景
-             * - 否则添加悬停效果
-             */
             <NavLink
-              key={to}//用路径作为唯一ID
+              key={to}
               to={to}
+              /**
+               * NavLink 的 className 函数
+               *
+               * isActive 参数表示当前路由是否匹配。
+               * 根据 isActive 返回不同的样式：
+               *   - 激活态：蓝色背景 + 白色文字 + 阴影
+               *   - 非激活态：透明背景 + 灰色文字 + 悬停效果
+               */
               className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-lg mb-2 transition-colors ${
+                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                   isActive
-                    ? 'bg-blue-600 text-white'           // 选中状态
-                    : 'text-gray-300 hover:bg-gray-800' // 未选中状态
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                 }`
               }
             >
-              <Icon className="w-5 h-5" />
+              <Icon className="w-4 h-4 flex-shrink-0" />
               <span>{label}</span>
             </NavLink>
           ))}
         </nav>
 
         {/**
-         * 底部信息
-         * 显示当前登录用户信息
+         * 用户信息和退出按钮
+         * 固定在导航栏底部。
          */}
-        <div className="p-4 border-t border-gray-700 text-sm text-gray-400">
-          <p>管理员</p>
-          <p className="text-xs mt-1">v1.0.0</p>
+        <div className="p-3 border-t border-gray-700">
+          {/**
+           * 用户信息卡片
+           */}
+          <div className="bg-gray-800 rounded-lg p-3 mb-2">
+            <p className="text-xs text-gray-400 mb-0.5">当前用户</p>
+            <p className="text-sm font-medium text-white">{user?.name || '管理员'}</p>
+            <p className="text-xs text-gray-500">{user?.role === 'admin' ? '管理员' : '商家'}</p>
+          </div>
+
+          {/**
+           * 退出登录按钮
+           */}
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 w-full px-3 py-2 text-gray-300 hover:bg-gray-800 hover:text-red-400 rounded-lg text-sm transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>退出登录</span>
+          </button>
         </div>
       </aside>
 
       {/**
-       * <main> - 主内容区
-       * flex-1 占满剩余空间
-       * bg-gray-100 设置浅灰色背景
-       * 
-       * <Outlet /> - 子路由渲染位置
-       * 
-       * 工作原理：
-       * 1. 用户访问 /dashboard
-       * 2. React Router 匹配到 App.jsx 中的 Route
-       * 3. 渲染 AdminLayout
-       * 4. AdminLayout 中的 <Outlet /> 渲染 Dashboard 组件
-       * 
-       * 简单理解：Outlet 就是"挖好的坑"，等着子路由来填
+       * 主内容区域
+       *
+       * flex-1：占据剩余空间
+       * overflow-auto：内容超出时出现滚动条（而非撑开页面）
+       * min-h-0：允许 flex 子元素收缩到小于内容尺寸
        */}
-      <main className="flex-1 bg-gray-100">
+      <main className="flex-1 overflow-auto">
+        {/**
+         * <Outlet /> 是 React Router 的占位组件
+         *
+         * 它会根据当前 URL，渲染匹配的子路由组件：
+         *   /dashboard → Dashboard
+         *   /drones → DroneManagement
+         *   /merchants → MerchantManagement
+         *   ...
+         *
+         * 这样布局组件（导航栏）保持不变，
+         * 右侧内容区域动态切换。
+         */}
         <Outlet />
       </main>
-      
     </div>
   );
 }
-
-/**
- * 【组件层级示例】
- * 
- * <AdminLayout>
- *   ├── <aside> (侧边栏)
- *   │     └── <nav> (导航)
- *   │           ├── <NavLink to="/dashboard"> 地图总览 </NavLink>
- *   │           ├── <NavLink to="/drones"> 无人机管理 </NavLink>
- *   │           └── <NavLink to="/merchants"> 商家管理 </NavLink>
- *   │
- *   └── <main> (主内容区)
- *         └── <Outlet> ← 这里渲染子路由页面
- *               ├── 访问 /dashboard → <Dashboard />
- *               ├── 访问 /drones → <DroneManagement />
- *               └── 访问 /merchants → <MerchantManagement />
- */
